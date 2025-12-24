@@ -28,7 +28,7 @@ const onBackButtonClick = () => {
   <header class="flex justify-between w-full p-5 bg-n-background gap-2">
     <div class="flex items-center">
       <button
-        v-if="showBackButton"
+        v-if="false"
         class="px-2 ltr:-ml-3 rtl:-mr-3"
         @click="onBackButtonClick"
       >

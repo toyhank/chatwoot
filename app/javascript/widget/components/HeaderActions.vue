@@ -79,36 +79,8 @@ export default {
 
 <!-- eslint-disable-next-line vue/no-root-v-if -->
 <template>
-  <div v-if="showHeaderActions" class="actions flex items-center gap-3">
-    <button
-      v-if="
-        canLeaveConversation &&
-        canUserEndConversation &&
-        hasEndConversationEnabled &&
-        showEndConversationButton
-      "
-      class="button transparent compact"
-      :title="$t('END_CONVERSATION')"
-      @click="resolveConversation"
-    >
-      <FluentIcon icon="sign-out" size="22" class="text-n-slate-12" />
-    </button>
-    <button
-      v-if="showPopoutButton"
-      class="button transparent compact new-window--button"
-      @click="popoutWindow"
-    >
-      <FluentIcon icon="open" size="22" class="text-n-slate-12" />
-    </button>
-    <button
-      class="button transparent compact close-button"
-      :class="{
-        'rn-close-button': isRNWebView,
-      }"
-      @click="closeWindow"
-    >
-      <FluentIcon icon="dismiss" size="24" class="text-n-slate-12" />
-    </button>
+  <div v-if="false" class="actions flex items-center gap-3">
+    <!-- 所有按钮已隐藏 -->
   </div>
 </template>
 

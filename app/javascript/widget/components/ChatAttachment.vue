@@ -160,7 +160,7 @@ export default {
     @input-file="onFileUpload"
   >
     <button class="min-h-8 min-w-8 flex items-center justify-center">
-      <FluentIcon v-if="!isUploading.image" icon="attach" />
+      <FluentIcon v-if="!isUploading.image" icon="image" />
       <Spinner v-if="isUploading" size="small" />
     </button>
   </FileUpload>

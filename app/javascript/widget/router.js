@@ -21,6 +21,10 @@ const router = createRouter({
       children: [
         {
           path: '',
+          redirect: '/messages',
+        },
+        {
+          path: '/home',
           name: 'home',
           component: () => import('./views/Home.vue'),
         },
