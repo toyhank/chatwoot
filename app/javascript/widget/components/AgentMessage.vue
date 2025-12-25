@@ -227,7 +227,7 @@ export default {
                 >
                   <source :src="attachment.data_url" />
                 </audio>
-                <FileBubble v-else :url="attachment.data_url" />
+                <FileBubble v-else-if="attachment.file_type !== 'image' && attachment.file_type !== 'video' && attachment.file_type !== 'audio'" :url="attachment.data_url" />
               </div>
             </div>
           </div>

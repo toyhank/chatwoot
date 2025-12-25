@@ -1,0 +1,94 @@
+name: Build and Push Chatwoot Image
+
+# 触发条件：
+# 1. 推送到 main 分支时
+# 2. 推送以 v 开头的标签时 (例如 v1.0.0)
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  # 允许在 GitHub 页面手动点击按钮触发
+  workflow_dispatch:
+
+env:
+  # 镜像名称，默认为：ghcr.io/你的用户名/仓库名
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # 允许写入 GitHub Packages
+
+    steps:
+      # 1. 拉取代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. 设置 Docker Buildx (用于缓存加速)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. 登录到 GitHub Container Registry
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # GitHub 自动生成的 Token，无需手动设置
+
+      # 4. 生成镜像标签 (metadata)
+      # 自动生成 latest, 以及基于 git tag 的版本号
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=sha,prefix=sha-
+
+      # 5. 构建并推送
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          # ⚠️ 指定你项目中的生产环境 Dockerfile 路径
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # 开启缓存，加快下一次构建速度
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+deploy:
+  needs: build-and-push # 只有打包成功了才执行部署
+  runs-on: ubuntu-latest
+  steps:
+    - name: Deploy to Server via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: 22
+        # 下面是登录服务器后自动执行的脚本
+        script: |
+          # 1. 进入项目目录 (请修改为你服务器上的实际路径)
+          cd /home/ubuntu/chatwoot 
+          
+          # 2. 登录 GHCR (为了拉取私有镜像，如果包是公开的这步可以省略)
+          # 注意：在服务器上你需要先手动 docker login 一次，或者在这里传 token
+          # 简单起见，假设你已经手动在服务器 login 过了，或者镜像是 Public 的
+          
+          # 3. 拉取最新镜像
+          docker compose pull
+          
+          # 4. 重启容器 (up -d 会自动检测镜像变化并重建)
+          docker compose up -d
+          

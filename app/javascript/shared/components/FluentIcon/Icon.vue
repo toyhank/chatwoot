@@ -31,6 +31,10 @@ export default {
     pathSource() {
       // To support icons with multiple paths
       const path = this.icons[`${this.icon}-${this.type}`];
+      if (!path) {
+        console.warn(`Icon not found: ${this.icon}-${this.type}`);
+        return [];
+      }
       if (path.constructor === Array) {
         return path;
       }

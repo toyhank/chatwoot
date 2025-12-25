@@ -1,6 +1,7 @@
 .bundle
 .env
 .env.*
+.git
 docker-compose.*
 docker/Dockerfile
 docker/dockerfiles

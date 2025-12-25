@@ -153,7 +153,7 @@ export default {
                 />
 
                 <FileBubble
-                  v-else
+                  v-else-if="attachment.file_type !== 'image' && attachment.file_type !== 'video'"
                   :url="attachment.data_url"
                   :is-in-progress="isInProgress"
                   :widget-color="widgetColor"

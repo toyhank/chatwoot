@@ -15,17 +15,12 @@ export default {
 </script>
 
 <template>
-  <a
-    :href="url"
-    target="_blank"
-    rel="noreferrer noopener nofollow"
-    class="image"
-  >
+  <div class="image">
     <div class="wrap">
       <img :src="thumb" alt="Picture message" @error="onImgError" />
       <span class="time">{{ readableTime }}</span>
     </div>
-  </a>
+  </div>
 </template>
 
 <style lang="scss" scoped>
