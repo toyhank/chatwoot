@@ -52,6 +52,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            GIT_SHA=${{ github.sha }}
 
   # 任务二：部署到服务器
   deploy:
