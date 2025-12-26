@@ -85,7 +85,7 @@ jobs:
             
             # --- 2. 进入项目目录 ---
             # ⚠️ 请修改为你服务器的实际路径
-            cd /home/chatwoot/chatwoot 
+            cd /root/chatwoot
             
             # --- 3. 修改 docker-compose.yml ---
             # 使用 sed 查找并替换 image 字段
