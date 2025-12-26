@@ -87,14 +87,14 @@ jobs:
             # ⚠️ 请修改为你服务器的实际路径
             cd /root/chatwoot
             
-            # --- 3. 修改 docker-compose.yml ---
+            # --- 3. 修改 docker-compose.yaml ---
             # 使用 sed 查找并替换 image 字段
             # 逻辑：找到以 "image: ghcr.io/..." 开头的行，替换为新版本
-            sed -i "s|image: ${IMAGE_BASE}:.*|image: ${NEW_IMAGE}|g" docker-compose.yml
+            sed -i "s|image: ${IMAGE_BASE}:.*|image: ${NEW_IMAGE}|g" docker-compose.yaml
             
             # 打印一下修改结果确认
             echo "配置文件已更新："
-            grep "image:" docker-compose.yml
+            grep "image:" docker-compose.yaml
             
             # --- 4. 拉取并重启 ---
             docker compose pull
