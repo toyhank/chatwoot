@@ -37,6 +37,15 @@ Rails.application.routes.draw do
 
   get '/api', to: 'api#index'
   namespace :api, defaults: { format: 'json' } do
+    namespace :mobile do
+      namespace :register do
+        get :check_email, to: 'register#check_email'
+        post :send_code, to: 'register#send_code'
+        post :register, to: 'register#register'
+        post :login, to: 'register#login'
+      end
+    end
+
     namespace :v1 do
       # ----------------------------------
       # start of account scoped api routes

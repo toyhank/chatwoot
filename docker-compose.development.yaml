@@ -34,7 +34,7 @@ services:
       - mailhog
       - sidekiq
     ports:
-      - 3002:3000
+      - 8080:3000  # Changed to 8080 to avoid Windows port reservation (3000-5000 range is often reserved)
     env_file: .env.develop
     environment:
       - VITE_DEV_SERVER_HOST=vite
@@ -75,8 +75,9 @@ services:
       - packs:/app/public/packs
       - cache:/app/tmp/cache
       - bundle:/usr/local/bundle
-    ports:
-      - "3036:3036" # Vite dev server
+    # ports:
+    #   - "3036:3036" # Vite dev server - commented out due to Windows port reservation issues
+    #   # If you need vite, uncomment and use a port > 5000, or configure Windows to release reserved ports
     environment:
       - VITE_DEV_SERVER_HOST=0.0.0.0
       - NODE_ENV=development

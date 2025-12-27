@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_19_161025) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_27_145821) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -811,6 +811,19 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_19_161025) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name", "account_id"], name: "index_email_templates_on_name_and_account_id", unique: true
+  end
+
+  create_table "email_verification_codes", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "code", null: false
+    t.datetime "expires_at", null: false
+    t.boolean "used", default: false, null: false
+    t.datetime "used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email", "code"], name: "index_email_verification_codes_on_email_and_code"
+    t.index ["email"], name: "index_email_verification_codes_on_email"
+    t.index ["expires_at"], name: "index_email_verification_codes_on_expires_at"
   end
 
   create_table "folders", force: :cascade do |t|

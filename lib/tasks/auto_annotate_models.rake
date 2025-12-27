@@ -1,7 +1,7 @@
 # NOTE: only doing this in development as some production environments (Heroku)
 # NOTE: are sensitive to local FS writes, and besides -- it's just not proper
 # NOTE: to have a dev-mode tool do its thing in production.
-if Rails.env.development?
+if Rails.env.development? && ENV.fetch('DISABLE_ANNOTATE', 'false') != 'true'
   require 'annotate_rb'
 
   AnnotateRb::Core.load_rake_tasks
@@ -44,7 +44,7 @@ if Rails.env.development?
       'ignore_unknown_models' => 'false',
       'hide_limit_column_types' => 'integer,bigint,boolean',
       'hide_default_column_types' => 'json,jsonb,hstore',
-      'skip_on_db_migrate' => 'false',
+      'skip_on_db_migrate' => ENV.fetch('SKIP_ANNOTATE_ON_MIGRATE', 'false'),
       'format_bare' => 'true',
       'format_rdoc' => 'false',
       'format_markdown' => 'false',
