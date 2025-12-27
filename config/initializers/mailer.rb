@@ -13,7 +13,7 @@ Rails.application.configure do
   # Config related to smtp
   smtp_settings = {
     address: ENV.fetch('SMTP_ADDRESS', 'localhost'),
-    port: ENV.fetch('SMTP_PORT', 587)
+    port: ENV.fetch('SMTP_PORT', 587).to_i
   }
 
   smtp_settings[:authentication] = ENV.fetch('SMTP_AUTHENTICATION', 'login').to_sym if ENV['SMTP_AUTHENTICATION'].present?
@@ -21,9 +21,21 @@ Rails.application.configure do
   smtp_settings[:user_name] = ENV.fetch('SMTP_USERNAME', nil)
   smtp_settings[:password] = ENV.fetch('SMTP_PASSWORD', nil)
   smtp_settings[:enable_starttls_auto] = ActiveModel::Type::Boolean.new.cast(ENV.fetch('SMTP_ENABLE_STARTTLS_AUTO', true))
-  smtp_settings[:openssl_verify_mode] = ENV['SMTP_OPENSSL_VERIFY_MODE'] if ENV['SMTP_OPENSSL_VERIFY_MODE'].present?
-  smtp_settings[:ssl] = ActiveModel::Type::Boolean.new.cast(ENV.fetch('SMTP_SSL', true)) if ENV['SMTP_SSL']
-  smtp_settings[:tls] = ActiveModel::Type::Boolean.new.cast(ENV.fetch('SMTP_TLS', true)) if ENV['SMTP_TLS']
+  smtp_settings[:openssl_verify_mode] = ENV['SMTP_OPENSSL_VERIFY_MODE'] || 'none'
+  smtp_settings[:ssl] = ActiveModel::Type::Boolean.new.cast(ENV.fetch('SMTP_SSL', 'false')) if ENV['SMTP_SSL'].present?
+  smtp_settings[:tls] = ActiveModel::Type::Boolean.new.cast(ENV.fetch('SMTP_TLS', 'false')) if ENV['SMTP_TLS'].present?
+  
+  # For port 465, use SSL instead of STARTTLS
+  if smtp_settings[:port] == 465 && !smtp_settings[:ssl]
+    smtp_settings[:ssl] = true
+    smtp_settings[:enable_starttls_auto] = false
+  end
+  
+  # Set OpenSSL verify mode for SSL connections
+  if smtp_settings[:ssl]
+    require 'openssl'
+    smtp_settings[:openssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE
+  end
   smtp_settings[:open_timeout] = ENV['SMTP_OPEN_TIMEOUT'].to_i if ENV['SMTP_OPEN_TIMEOUT'].present?
   smtp_settings[:read_timeout] = ENV['SMTP_READ_TIMEOUT'].to_i if ENV['SMTP_READ_TIMEOUT'].present?
 
