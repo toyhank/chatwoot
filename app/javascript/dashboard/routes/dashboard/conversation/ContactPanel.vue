@@ -91,9 +91,15 @@ const channelType = computed(() => currentChat.value.meta?.channel);
 const contactGetter = useMapGetter('contacts/getContact');
 const contactId = computed(() => currentChat.value.meta?.sender?.id);
 const contact = computed(() => contactGetter.value(contactId.value));
-const contactAdditionalAttributes = computed(
-  () => contact.value.additional_attributes || {}
-);
+const contactAdditionalAttributes = computed(() => {
+  if (!contact.value) return {};
+  const attrs = contact.value.additional_attributes || {};
+  // registration_ip 是从API顶级字段返回的，需要合并到 additional_attributes 中
+  if (contact.value.registration_ip) {
+    return { ...attrs, registration_ip: contact.value.registration_ip };
+  }
+  return attrs;
+});
 
 const getContactDetails = () => {
   if (contactId.value) {

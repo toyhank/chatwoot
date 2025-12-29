@@ -40,7 +40,8 @@ const platformName = computed(() => {
   return `${name} ${version}`;
 });
 
-const createdAtIp = computed(() => props.contactAttributes.created_at_ip);
+const createdAtIp = computed(() => props.contactAttributes?.created_at_ip || '');
+const registrationIp = computed(() => props.contactAttributes?.registration_ip || '');
 
 const staticElements = computed(() =>
   [
@@ -80,7 +81,18 @@ const staticElements = computed(() =>
       key: 'static-ip-address',
       type: 'static_attribute',
     },
-  ].filter(attribute => !!attribute.content.value)
+    {
+      content: registrationIp,
+      title: 'CONTACT_PANEL.REGISTRATION_IP',
+      key: 'static-registration-ip',
+      type: 'static_attribute',
+    },
+  ].filter(attribute => {
+    // 对于computed ref，需要访问.value属性
+    const content = attribute.content;
+    const value = content?.value ?? content;
+    return !!value && value !== '';
+  })
 );
 </script>
 

@@ -119,7 +119,8 @@ class Api::Mobile::Register::RegisterController < Api::BaseController
         password: password,
         password_confirmation: password,
         name: user_name,
-        confirmed_at: Time.current
+        confirmed_at: Time.current,
+        registration_ip: request.remote_ip
       )
 
       # 标记验证码为已使用

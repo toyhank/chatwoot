@@ -28,7 +28,8 @@ class Api::V1::AccountsController < Api::BaseController
       email: account_params[:email],
       user_password: account_params[:password],
       locale: account_params[:locale],
-      user: current_user
+      user: current_user,
+      registration_ip: request.remote_ip
     ).perform
     if @user
       send_auth_headers(@user)

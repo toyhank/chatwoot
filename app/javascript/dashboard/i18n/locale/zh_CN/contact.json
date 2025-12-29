@@ -15,6 +15,7 @@
     "INITIATED_FROM": "启动自：",
     "INITIATED_AT": "发起于",
     "IP_ADDRESS": "IP 地址",
+    "REGISTRATION_IP": "注册IP",
     "CREATED_AT_LABEL": "创建时间",
     "NEW_MESSAGE": "新消息",
     "CALL": "呼叫",
