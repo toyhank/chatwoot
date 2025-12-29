@@ -42,9 +42,6 @@ services:
       - VITE_RUBY_PORT=3036
       - NODE_ENV=development
       - RAILS_ENV=development
-      - SMTP_PORT=465
-      - SMTP_SSL=true
-      - SMTP_ENABLE_STARTTLS_AUTO=false
     entrypoint: docker/entrypoints/rails.sh
     command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
 

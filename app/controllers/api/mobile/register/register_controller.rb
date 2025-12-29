@@ -56,7 +56,11 @@ class Api::Mobile::Register::RegisterController < Api::BaseController
     # 生成并发送验证码
     verification_code = EmailVerificationCode.generate_for_email(email)
     begin
-      RegisterMailer.verification_code(email, verification_code.code, CODE_EXPIRE_MINUTES).deliver_now
+      result = ResendEmailService.send_verification_code(email, verification_code.code, CODE_EXPIRE_MINUTES)
+      unless result[:success]
+        Rails.logger.warn("Failed to send email via Resend: #{result[:error]}")
+        # 在开发环境中，即使邮件发送失败也继续，验证码已经保存到数据库
+      end
     rescue StandardError => mail_error
       Rails.logger.warn("Failed to send email (continuing anyway): #{mail_error.message}")
       # 在开发环境中，即使邮件发送失败也继续，验证码已经保存到数据库
