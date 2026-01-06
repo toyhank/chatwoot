@@ -11,13 +11,26 @@ class Api::V1::Widget::BaseController < ApplicationController
     if @contact_inbox.hmac_verified?
       verified_contact_inbox_ids = @contact.contact_inboxes.where(inbox_id: auth_token_params[:inbox_id], hmac_verified: true).map(&:id)
       @conversations = @contact.conversations.where(contact_inbox_id: verified_contact_inbox_ids)
+    elsif @contact.email.present? || @contact.phone_number.present? || @contact.identifier.present?
+      # If contact is identified (has email/phone/identifier), find conversations from all contact_inboxes
+      # This ensures same user from different devices (PC/mobile) sees the same conversation
+      contact_inbox_ids = @contact.contact_inboxes.where(inbox_id: auth_token_params[:inbox_id]).map(&:id)
+      @conversations = @contact.conversations.where(contact_inbox_id: contact_inbox_ids, inbox_id: auth_token_params[:inbox_id])
     else
       @conversations = @contact_inbox.conversations.where(inbox_id: auth_token_params[:inbox_id])
     end
   end
 
   def conversation
-    @conversation ||= conversations.last
+    return @conversation if @conversation
+
+    # If lock_to_single_conversation is enabled, use the last conversation
+    # Otherwise, use the last open conversation
+    @conversation = if inbox.lock_to_single_conversation
+                      conversations.last
+                    else
+                      conversations.where.not(status: :resolved).last || conversations.last
+                    end
   end
 
   def create_conversation

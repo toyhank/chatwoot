@@ -4,7 +4,7 @@ import { setHeader } from 'widget/helpers/axios';
 import addHours from 'date-fns/addHours';
 import { IFrameHelper, RNHelper } from 'widget/helpers/utils';
 import configMixin from './mixins/configMixin';
-import { getLocale } from './helpers/urlParamsHelper';
+import { getLocale, getUserParamsFromURL } from './helpers/urlParamsHelper';
 import { getLanguageDirection } from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
 import { isEmptyObject } from 'widget/helpers/utils';
 import Spinner from 'shared/components/Spinner.vue';
@@ -98,6 +98,8 @@ export default {
     this.$store.dispatch('conversationAttributes/getAttributes');
     this.registerUnreadEvents();
     this.registerCampaignEvents();
+    // Auto-set user from URL parameters (for Widget URL mode without JavaScript SDK)
+    this.autoSetUserFromURL();
   },
   methods: {
     ...mapActions('appConfig', [
@@ -114,6 +116,12 @@ export default {
       'resetCampaign',
     ]),
     ...mapActions('agent', ['fetchAvailableAgents']),
+    autoSetUserFromURL() {
+      const userParams = getUserParamsFromURL(window.location.search);
+      if (userParams && userParams.identifier) {
+        this.$store.dispatch('contacts/setUser', userParams);
+      }
+    },
     scrollConversationToBottom() {
       const container = this.$el.querySelector('.conversation-wrap');
       container.scrollTop = container.scrollHeight;
