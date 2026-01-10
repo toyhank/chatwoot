@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_29_171148) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_08_140933) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -608,6 +608,20 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_29_171148) do
     t.index ["inbox_id"], name: "index_contact_inboxes_on_inbox_id"
     t.index ["pubsub_token"], name: "index_contact_inboxes_on_pubsub_token", unique: true
     t.index ["source_id"], name: "index_contact_inboxes_on_source_id"
+  end
+
+  create_table "contact_push_subscriptions", force: :cascade do |t|
+    t.bigint "contact_id", null: false
+    t.bigint "contact_inbox_id", null: false
+    t.string "push_token", null: false
+    t.string "device_id"
+    t.string "platform", default: "android"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_contact_push_subscriptions_on_contact_id"
+    t.index ["contact_inbox_id", "device_id"], name: "idx_contact_push_subs_on_inbox_device", unique: true, where: "(device_id IS NOT NULL)"
+    t.index ["contact_inbox_id"], name: "index_contact_push_subscriptions_on_contact_inbox_id"
+    t.index ["push_token"], name: "index_contact_push_subscriptions_on_push_token", unique: true
   end
 
   create_table "contacts", id: :serial, force: :cascade do |t|
@@ -1280,6 +1294,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_29_171148) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "contact_push_subscriptions", "contact_inboxes"
+  add_foreign_key "contact_push_subscriptions", "contacts"
   add_foreign_key "inboxes", "portals"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").

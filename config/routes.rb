@@ -405,6 +405,11 @@ Rails.application.routes.draw do
             patch :set_user
           end
         end
+        resources :push_subscriptions, only: [:create, :destroy] do
+          collection do
+            delete :destroy_by_device  # 按 device_id 删除，支持用户切换
+          end
+        end
         resources :inbox_members, only: [:index]
         resources :labels, only: [:create, :destroy]
         namespace :integrations do
