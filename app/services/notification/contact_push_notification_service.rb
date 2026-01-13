@@ -24,9 +24,11 @@ class Notification::ContactPushNotificationService
   def contact_push_subscriptions
     return [] unless conversation.contact
 
+    # 🔧 智能匹配：查找同一个contact的所有推送订阅
+    # 即使订阅注册在不同的ContactInbox上，只要是同一个Contact就发送推送
+    # 这解决了Widget多次初始化导致创建多个ContactInbox的问题
     ContactPushSubscription.where(
-      contact_id: conversation.contact.id,
-      contact_inbox_id: conversation.contact_inbox_id
+      contact_id: conversation.contact.id
     )
   end
 
