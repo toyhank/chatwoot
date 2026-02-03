@@ -44,6 +44,10 @@ Rails.application.routes.draw do
         post :register, to: 'register#register'
         post :login, to: 'register#login'
       end
+      
+      namespace :user do
+        delete :delete, to: 'user#delete'
+      end
     end
 
     namespace :v1 do

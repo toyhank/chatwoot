@@ -100,7 +100,12 @@ jobs:
             docker compose pull
             docker compose up -d
             
-            # --- 5. 清理旧镜像 (释放磁盘空间) ---
+            # --- 5. 运行数据库迁移 ---
+            echo "🔄 正在运行数据库迁移..."
+            docker compose exec -T rails bundle exec rails db:migrate
+            echo "✅ 数据库迁移完成"
+            
+            # --- 6. 清理旧镜像 (释放磁盘空间) ---
             docker image prune -f
             
             echo "✅ 部署完成！"

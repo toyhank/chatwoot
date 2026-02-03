@@ -13,6 +13,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
 
     # Allow mobile registration API for CORS
     resource '/api/mobile/register/*', headers: :any, methods: :any
+    resource '/api/mobile/user/*', headers: :any, methods: :any
 
     if ActiveModel::Type::Boolean.new.cast(ENV.fetch('CW_API_ONLY_SERVER', false)) || Rails.env.development?
       resource '*', headers: :any, methods: :any, expose: %w[access-token client uid expiry]

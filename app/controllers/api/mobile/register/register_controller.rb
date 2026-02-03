@@ -147,6 +147,18 @@ class Api::Mobile::Register::RegisterController < Api::BaseController
   def login
     email = params[:email]&.strip
     password = params[:password]
+    access_token = params[:access_token]&.strip
+
+    if access_token.present?
+      user_token = AccessToken.find_by(token: access_token)
+      if user_token&.owner.is_a?(User)
+        user = user_token.owner
+        render_user_response(user)
+        return
+      else
+        return render_error(status: 401, msg: '无效的 token')
+      end
+    end
 
     # 验证邮箱格式
     unless valid_email?(email)
@@ -169,6 +181,16 @@ class Api::Mobile::Register::RegisterController < Api::BaseController
     end
 
     # 返回用户信息
+    render_user_response(user)
+  rescue StandardError => e
+    Rails.logger.error("Login failed: #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    render_error(status: 500, msg: '登录失败，请稍后重试')
+  end
+
+  private
+
+  def render_user_response(user)
     render_success(
       data: {
         uid: user.id,
@@ -179,13 +201,7 @@ class Api::Mobile::Register::RegisterController < Api::BaseController
         message: '登录成功'
       }
     )
-  rescue StandardError => e
-    Rails.logger.error("Login failed: #{e.message}")
-    Rails.logger.error(e.backtrace.join("\n"))
-    render_error(status: 500, msg: '登录失败，请稍后重试')
   end
-
-  private
 
   def valid_email?(email)
     email.present? && email.match?(EMAIL_REGEX)
