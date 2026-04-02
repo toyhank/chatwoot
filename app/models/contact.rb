@@ -144,6 +144,7 @@ class Contact < ApplicationRecord
       .where.missing(:conversations)
   }
 
+
   def get_source_id(inbox_id)
     contact_inboxes.find_by!(inbox_id: inbox_id).source_id
   end

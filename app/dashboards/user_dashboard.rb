@@ -37,7 +37,8 @@ class UserDashboard < Administrate::BaseDashboard
     pubsub_token: Field::String,
     type: Field::Select.with_options(collection: [nil, 'SuperAdmin']),
     accounts: CountField,
-    access_token: Field::HasOne
+    access_token: Field::HasOne,
+    balance: Field::Number.with_options(decimals: 0)
   }.freeze
 
   # COLLECTION_ATTRIBUTES
@@ -51,6 +52,7 @@ class UserDashboard < Administrate::BaseDashboard
     name
     email
     accounts
+    balance
     type
   ].freeze
 
@@ -69,6 +71,7 @@ class UserDashboard < Administrate::BaseDashboard
     confirmed_at
     account_users
     access_token
+    balance
   ].freeze
 
   # FORM_ATTRIBUTES
@@ -81,6 +84,7 @@ class UserDashboard < Administrate::BaseDashboard
     email
     password
     confirmed_at
+    balance
     type
   ].freeze
 

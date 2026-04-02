@@ -46,8 +46,19 @@ Rails.application.routes.draw do
       end
       
       namespace :user do
+        get :profile, to: "user#profile"
         delete :delete, to: 'user#delete'
+        post :check_in, to: 'user#check_in'
       end
+
+      # Admin API
+      post 'admin/login', to: 'admin#login'
+      get 'admin/stats', to: 'admin#stats'
+      get 'admin/users', to: 'admin#users'
+      get 'admin/checkins', to: 'admin#checkins'
+      get 'admin/config', to: 'admin#get_config'
+      post 'admin/config', to: 'admin#update_config'
+      post 'admin/users/:id/update_balance', to: 'admin#update_balance'
     end
 
     namespace :v1 do
@@ -407,6 +418,7 @@ Rails.application.routes.draw do
           collection do
             post :destroy_custom_attributes
             patch :set_user
+            post :check_in
           end
         end
         resources :push_subscriptions, only: [:create, :destroy] do

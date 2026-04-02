@@ -1,224 +1,55 @@
-# DBeaver 连接 Chatwoot PostgreSQL 指南
+# DBeaver 连接 Chatwoot 数据库指南
 
-## 📋 连接信息
+我已经为您在 Docker 中开放了数据库端口 **5432**。您现在可以使用 DBeaver 按照以下配置进行连接：
 
-根据 `docker-compose.development.yaml` 和 `.env.develop` 配置：
+## 📋 连接配置信息
 
-| 参数 | 值 |
-|------|-----|
-| **Host** | `localhost` 或 `127.0.0.1` |
-| **Port** | `5432` |
-| **Database** | `chatwoot` |
-| **Username** | `postgres` |
-| **Password** | `postgres` |
-| **PostgreSQL Version** | 16 (pgvector/pgvector:pg16) |
-
-## 🔧 DBeaver 配置步骤
-
-### 1. 创建新连接
-
-1. 打开 DBeaver
-2. 点击 **Database** → **New Database Connection**
-3. 选择 **PostgreSQL**
-4. 点击 **Next**
-
-### 2. 填写连接信息
-
-**Main 标签**：
-```
-Host: localhost
-Port: 5432
-Database: chatwoot
-Username: postgres
-Password: postgres
-```
-
-**勾选选项**：
-- ✅ Show all databases
-
-### 3. 驱动设置（可选）
-
-点击 **Edit Driver Settings**，确保：
-- Driver name: PostgreSQL
-- Class Name: org.postgresql.Driver
-- URL Template: `jdbc:postgresql://{ho
-st}:{port}/{database}`
-
-### 4. 测试连接
-
-点击 **Test Connection**，应该显示：
-```
-Connected
-PostgreSQL 16.x
-Driver: PostgreSQL JDBC Driver
-```
-
-### 5. 完成
-
-点击 **Finish** 保存连接。
+| 参数项 | 配置值 |
+| :--- | :--- |
+| **数据库类型** | PostgreSQL |
+| **服务器地址 (Host)** | `172.18.88.87` (或使用您的服务器公网/内网 IP) |
+| **端口 (Port)** | `5432` |
+| **数据库名 (Database)** | `chatwoot` |
+| **用户名 (Username)** | `postgres` |
+| **密码 (Password)** | `chatwoot_postgres_password` |
 
 ---
 
-## ⚠️ 故障排查
+## 🔧 DBeaver 操作步骤
 
-### 问题 1: 连接被拒绝 (Connection refused)
+1. **新建连接**:
+   - 在 DBeaver 中点击左上角的“新连接”图标。
+   - 选择 **PostgreSQL**。
 
-**原因**: Docker 端口没有映射到主机
+2. **填写设置**:
+   - 在 **Main** 选项卡中，将上述表格中的 Host、Database、Username、Password 填入对应框内。
+   - 点击底部的 **Test Connection... (测试连接)**。
 
-**解决方案**:
+3. **下载驱动**:
+   - 如果 DBeaver 提示缺少驱动，点击 **Download** 让它自动下载即可。
 
-1. **检查端口映射**:
-```bash
-docker ps --filter "name=postgres" --format "table {{.Names}}\t{{.Ports}}"
-```
-
-应该看到：`0.0.0.0:5432->5432/tcp`
-
-2. **如果没有映射，重启 PostgreSQL**:
-```bash
-cd /home/chatwoot1/chatwoot
-docker compose -f docker-compose.development.yaml restart postgres
-```
-
-3. **验证端口映射**:
-```bash
-docker compose -f docker-compose.development.yaml port postgres 5432
-```
-
-应该返回：`0.0.0.0:5432` 或 `127.0.0.1:5432`
-
-### 问题 2: 端口 5432 被占用
-
-**检查端口占用**:
-```powershell
-netstat -ano | findstr :5432
-```
-
-**解决方案 A**: 停止占用端口的程序
-
-**解决方案 B**: 修改 PostgreSQL 端口
-
-编辑 `docker-compose.development.yaml`：
-```yaml
-postgres:
-  ports:
-    - '5433:5432'  # 改为 5433
-```
-
-然后在 DBeaver 中使用 `Port: 5433`
-
-### 问题 3: 密码认证失败
-
-**检查密码**：
-```bash
-docker compose -f docker-compose.development.yaml exec postgres psql -U postgres -c "\conninfo"
-```
-
-**重置密码**（如果需要）：
-```bash
-docker compose -f docker-compose.development.yaml exec postgres psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';"
-```
-
-### 问题 4: Docker Desktop 未启动
-
-确保 Docker Desktop 正在运行：
-```bash
-docker ps
-```
-
-如果返回错误，启动 Docker Desktop。
+4. **完成连接**:
+   - 测试通过后点击 **Finish**。您现在可以查看所有的表（如 `users`, `contacts`, `messages` 等）。
 
 ---
 
-## 🎯 快速测试连接
+## 🛠️ 备注 (运维参考)
 
-使用命令行测试：
-
-```bash
-# Windows (如果安装了 PostgreSQL 客户端)
-psql -h localhost -p 5432 -U postgres -d chatwoot
-
-# 或使用 Docker
-docker compose -f docker-compose.development.yaml exec postgres psql -U postgres -d chatwoot
-```
-
-成功连接后会看到：
-```
-psql (16.x)
-Type "help" for help.
-
-chatwoot=#
-```
+如果您是在生产服务器上操作，请注意：
+- 我已经在 `docker-compose.yaml` 中添加了 `ports: - '5432:5432'` 并重启了数据库服务。
+- 数据库账号密码来源于项目根目录的 `.env` 文件。
+- 如果您无法连接，请检查服务器的防火墙（Security Group）是否放行了 **5432** 端口。
 
 ---
 
-## 📊 常用查询
+## 常用表查询命令 (SQL)
 
-连接成功后，可以运行：
+连接成功后，您可以尝试运行以下 SQL 来查看数据：
 
 ```sql
--- 查看所有表
-\dt
+-- 查看所有注册用户及其余额
+SELECT id, email, name, balance, last_check_in_at FROM users WHERE type IS NULL;
 
--- 查看数据库大小
-SELECT pg_size_pretty(pg_database_size('chatwoot'));
-
--- 查看所有 Contacts
-SELECT id, name, email, identifier FROM contacts LIMIT 10;
-
--- 查看推送订阅
-SELECT id, contact_id, contact_inbox_id, LEFT(push_token, 40) as token, platform 
-FROM contact_push_subscriptions;
-
--- 查看最近的消息
-SELECT m.id, m.content, m.message_type, m.created_at, c.contact_id 
-FROM messages m 
-JOIN conversations c ON c.id = m.conversation_id 
-ORDER BY m.created_at DESC 
-LIMIT 10;
-```
-
----
-
-## 🔒 安全提示
-
-⚠️ **生产环境注意事项**：
-
-1. **不要在生产环境暴露 5432 端口**
-2. **使用强密码**（当前密码是 `postgres`，仅用于开发）
-3. **限制访问 IP**（如需要，在 docker-compose.yaml 中配置）
-
-生产环境建议配置：
-```yaml
-postgres:
-  ports:
-    - '127.0.0.1:5432:5432'  # 只允许本地访问
-  environment:
-    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # 使用环境变量
-```
-
----
-
-## 📚 相关文件
-
-- [docker-compose.development.yaml](file:///home/chatwoot1/chatwoot/docker-compose.development.yaml) - Docker 配置
-- [.env.develop](file:///home/chatwoot1/chatwoot/.env.develop) - 环境变量配置
-
----
-
-## ✅ 连接成功标准
-
-成功连接后，在 DBeaver 中应该能看到：
-
-```
-📁 chatwoot
-  📁 Schemas
-    📁 public
-      📁 Tables
-        📄 accounts
-        📄 contacts
-        📄 contact_push_subscriptions
-        📄 conversations
-        📄 messages
-        ... (更多表)
+-- 查看今日签到记录
+SELECT * FROM users WHERE last_check_in_at >= CURRENT_DATE;
 ```

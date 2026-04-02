@@ -199,6 +199,7 @@ class Api::Mobile::Register::RegisterController < Api::BaseController
         avatar: user.avatar_url || '/statics/default_avatar.png',
         phone: '',
         access_token: user.access_token.token,
+        balance: user.balance || 0,
         message: '登录成功'
       }
     )

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linme Admin UI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fb; color: #1f2937; }
+    .app { display: flex; }
+    .sidebar { width: 248px; background: #ffffff; border-right: 1px solid #e5e7eb; padding: 22px 16px; position: fixed; left: 0; top: 0; bottom: 0; overflow-y: auto; }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 8px 10px 20px; border-bottom: 1px solid #eef1f6; margin-bottom: 18px; }
+    .brand-logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 18px; }
+    .brand h1 { margin: 0; font-size: 18px; }
+    .brand p { margin: 3px 0 0; color: #6b7280; font-size: 12px; }
+    .menu-group-title { padding: 8px 10px; color: #9ca3af; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+    .menu-item { display: flex; align-items: center; gap: 12px; width: 100%; border: none; background: transparent; cursor: pointer; padding: 12px 12px; border-radius: 12px; font-size: 14px; color: #374151; margin-bottom: 6px; text-align: left; }
+    .menu-item:hover { background: #f3f6fb; }
+    .menu-item.active { background: #eaf2ff; color: #2563eb; font-weight: 600; }
+    .menu-icon { width: 18px; text-align: center; font-size: 16px; }
+    .main { margin-left: 248px; width: calc(100% - 248px); padding: 18px 18px 24px; }
+    .topbar { background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; }
+    .topbar h2 { margin: 0; font-size: 24px; }
+    .topbar p { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+    .search-box { display: flex; align-items: center; gap: 10px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px 12px; min-width: 280px; }
+    .search-box input { border: none; background: transparent; outline: none; width: 100%; font-size: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 18px; box-shadow: 0 1px 2px rgba(16,24,40,.03); }
+    .stat-label { color: #6b7280; font-size: 13px; margin-bottom: 12px; }
+    .stat-value { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .stat-sub { font-size: 12px; color: #10b981; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .section-title { font-size: 20px; font-weight: 700; margin: 0; }
+    .section-subtitle { color: #6b7280; font-size: 13px; margin-top: 4px; }
+    .toolbar { background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 16px; display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+    .field { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px 12px; min-height: 42px; }
+    .field input, .field select { border: none; background: transparent; outline: none; font-size: 14px; color: #111827; min-width: 120px; }
+    .btn { border: none; border-radius: 12px; padding: 11px 16px; font-size: 14px; cursor: pointer; font-weight: 600; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-light { background: #fff; color: #374151; border: 1px solid #dbe2ea; }
+    .btn-success { background: #10b981; color: #fff; }
+    .table-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; overflow-x: auto; overflow-y: hidden; width: 100%; }
+    .section-header, .toolbar, .table-card { width: 100%; }
+    .toolbar { align-items: center; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #f8fafc; }
+    th, td { padding: 14px 16px; border-bottom: 1px solid #eef2f7; text-align: left; font-size: 14px; white-space: nowrap; }
+    th { color: #6b7280; font-weight: 600; font-size: 13px; }
+    tbody tr:hover { background: #fafcff; }
+    .tag { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .tag-blue { background: #eaf2ff; color: #2563eb; }
+    .tag-green { background: #e8fbf4; color: #059669; }
+    .tag-red { background: #feecec; color: #dc2626; }
+    .tag-yellow { background: #fff7e7; color: #d97706; }
+    .action-link { color: #2563eb; text-decoration: none; font-weight: 600; margin-right: 12px; font-size: 13px; }
+    .two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+    .mini-title { margin: 0 0 14px; font-size: 16px; font-weight: 700; }
+    .list-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #eef2f7; gap: 10px; }
+    .list-row:last-child { border-bottom: none; }
+    .name { font-weight: 600; margin-bottom: 4px; }
+    .muted { color: #6b7280; font-size: 12px; }
+    .amount { font-weight: 700; color: #059669; }
+    .amount.red { color: #dc2626; }
+    .footer-note { margin-top: 14px; color: #9ca3af; font-size: 12px; }
+    @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .two-col { grid-template-columns: 1fr; } }
+    @media (max-width: 860px) { .sidebar { position: static; width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; } .main { margin-left: 0; width: 100%; padding: 16px; } .app { flex-direction: column; } .grid-4 { grid-template-columns: 1fr; } .topbar { flex-direction: column; align-items: flex-start; } .search-box { min-width: 100%; } .table-card { overflow-x: auto; } }
+
+    .column-manager-note { color:#6b7280; font-size:12px; margin-bottom:10px; }
+    .column-list { display:flex; flex-direction:column; gap:8px; }
+    .column-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; background:#f8fafc; cursor:move; user-select:none; }
+    .column-item.dragging { opacity:.55; border-style:dashed; }
+    .column-item-left { display:flex; align-items:center; gap:10px; }
+    .drag-handle { color:#9ca3af; font-size:16px; line-height:1; }
+
+
+    .main { min-height: auto !important; }
+    .section { min-height: auto !important; }
+
+
+    .users-shell { background:#fff; border:1px solid #e5e7eb; border-radius:18px; min-height:calc(100vh - 260px); display:flex; flex-direction:column; overflow:hidden; }
+    .users-shell .table-card { border:none; border-radius:0; margin:0; flex:1; min-height:0; }
+    .users-shell .toolbar.users-pagination { margin:0; border:none; border-top:1px solid #eef2f7; border-radius:0; padding:14px 16px; }
+    .users-shell .table-card::-webkit-scrollbar { height: 10px; }
+    .users-shell .table-card::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:999px; }
+    @media (max-width: 1024px) {
+      .users-shell { min-height:calc(100vh - 220px); }
+    }
+    @media (max-width: 768px) {
+      .users-shell { min-height:auto; }
+      .users-shell .toolbar.users-pagination { gap:10px; align-items:flex-start; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">L</div>
+        <div>
+          <h1>Linme Admin</h1>
+          <p>后台管理 UI</p>
+        </div>
+      </div>
+      <div class="menu-group-title">Main</div>
+      <button class="menu-item active" data-target="dashboard"><span class="menu-icon">📊</span>首页</button>
+      <button class="menu-item" data-target="users"><span class="menu-icon">👤</span>用户管理</button>
+      <button class="menu-item" data-target="checkin"><span class="menu-icon">📅</span>签到记录</button>
+      <button class="menu-item" data-target="withdraw"><span class="menu-icon">💸</span>提现审核</button>
+      <button class="menu-item" data-target="ledger"><span class="menu-icon">🧾</span>资金流水</button>
+      <button class="menu-item" data-target="announcements"><span class="menu-icon">📣</span>首页奈拉汇率</button>
+      <button class="menu-item" data-target="broadcast"><span class="menu-icon">📢</span>广播推广</button>
+      <button class="menu-item" data-target="risk"><span class="menu-icon">🛡️</span>风控名单</button>
+      <button class="menu-item" data-target="logs"><span class="menu-icon">📜</span>操作日志</button>
+      <button class="menu-item" data-target="settings"><span class="menu-icon">⚙️</span>设置</button>
+    </aside>
+
+    <main class="main">
+      <section id="dashboard" class="section active">
+        <div class="grid-4" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+          <div class="card"><div class="stat-label">总用户数</div><div class="stat-value">0</div><div class="stat-sub">...</div></div>
+          <div class="stat-card card"><div class="stat-label">今日签到人数</div><div class="stat-value">0</div><div class="stat-sub">...</div></div>
+          <div class="stat-card card"><div class="stat-label">今日提现人数</div><div class="stat-value">0</div><div class="stat-sub">...</div></div>
+          <div class="card"><div class="stat-label">总余额流水</div><div class="stat-value">₦ 0</div><div class="stat-sub">...</div></div>
+          <div class="card"><div class="stat-label">异常注册提醒</div><div class="stat-value">0</div><div class="stat-sub">...</div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <h3 class="mini-title">待处理提醒</h3>
+          <div class="list-row"><div><div class="name">待审核提现</div><div class="muted">当前有 0 笔提现申请未处理</div></div><span class="tag tag-yellow">待处理</span></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <h3 class="mini-title">最近活跃</h3>
+            <div id="recentActivity" class="list-container">
+               <div class="muted" style="padding:20px 0;">暂无最新记录</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="mini-title">最近提现</h3>
+            <div id="recentWithdrawals" class="list-container">
+               <div class="muted" style="padding:20px 0;">暂无最新记录</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="users" class="section">
+        <div class="section-header">
+          <div><h3 class="section-title">用户管理</h3><div class="section-subtitle">查看用户注册信息、银行信息、IP、设备和账户金额。</div></div>
+          <div style="display:flex;gap:8px;">
+            <div style="position:relative;">
+              <button class="btn btn-light column-toggle-btn" data-panel="user-columns" style="padding:10px 14px;">显示列 ▾</button>
+              <div id="user-columns" class="column-panel" style="display:none;position:absolute;top:46px;right:0;width:320px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.08);padding:14px;z-index:12;">
+                <div style="font-size:14px;font-weight:700;margin-bottom:8px;">用户管理显示列</div>
+                <div class="column-manager-note">勾选控制显示，按住右侧拖动手柄可调整列顺序。</div>
+                <div id="user-column-list" class="column-list">
+                  <div class="column-item" draggable="true" data-col-key="user_id"><div class="column-item-left"><input type="checkbox" checked /><span>用户ID</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="register_name"><div class="column-item-left"><input type="checkbox" checked /><span>注册名字</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="phone"><div class="column-item-left"><input type="checkbox" checked /><span>电话号码</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="email"><div class="column-item-left"><input type="checkbox" checked /><span>邮箱</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="bank_account"><div class="column-item-left"><input type="checkbox" checked /><span>银行账号</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="bank_name"><div class="column-item-left"><input type="checkbox" checked /><span>银行名称</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="register_time"><div class="column-item-left"><input type="checkbox" checked /><span>注册时间</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="register_ip"><div class="column-item-left"><input type="checkbox" checked /><span>注册IP</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="last_login_ip"><div class="column-item-left"><input type="checkbox" checked /><span>最后登录IP</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="last_login"><div class="column-item-left"><input type="checkbox" checked /><span>最后登录</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="device"><div class="column-item-left"><input type="checkbox" checked /><span>设备信息</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="remark"><div class="column-item-left"><input type="checkbox" checked /><span>备注</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="app_amount"><div class="column-item-left"><input type="checkbox" checked /><span>App金额</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="status"><div class="column-item-left"><input type="checkbox" checked /><span>状态</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="risk_tag"><div class="column-item-left"><input type="checkbox" checked /><span>风控标签</span></div><span class="drag-handle">⋮⋮</span></div>
+                  <div class="column-item" draggable="true" data-col-key="action"><div class="column-item-left"><input type="checkbox" checked /><span>操作</span></div><span class="drag-handle">⋮⋮</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:12px;gap:8px;">
+                  <button id="user-columns-reset" class="btn btn-light" style="flex:1;">恢复默认</button>
+                  <button id="user-columns-apply" class="btn btn-primary" style="flex:1;">应用</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary">+ 新增用户</button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="field"><span>👤</span><input id="userSearchInput" placeholder="姓名 / 手机号 / 邮箱" /></div>
+          <div class="field"><span>📌</span><select><option>全部状态</option><option>正常</option><option>冻结</option></select></div>
+          <button id="userSearchBtn" class="btn btn-primary">查询</button>
+          <button class="btn btn-light">重置</button>
+          <button class="btn btn-success">导出</button>
+        </div>
+        <div class="users-shell">
+          <div class="table-card">
+            <table id="userTable">
+              <thead>
+                <tr>
+                  <th data-col-key="user_id">用户ID</th>
+                  <th data-col-key="register_name">注册名字</th>
+                  <th data-col-key="phone">电话号码</th>
+                  <th data-col-key="email">邮箱</th>
+                  <th data-col-key="bank_account">银行账号</th>
+                  <th data-col-key="bank_name">银行名称</th>
+                  <th data-col-key="register_time">注册时间</th>
+                  <th data-col-key="register_ip">注册IP</th>
+                  <th data-col-key="last_login_ip">最后登录IP</th>
+                  <th data-col-key="last_login">最后登录</th>
+                  <th data-col-key="device">设备信息</th>
+                  <th data-col-key="remark">备注</th>
+                  <th data-col-key="app_amount">App金额</th>
+                  <th data-col-key="status">状态</th>
+                  <th data-col-key="risk_tag">风控标签</th>
+                  <th data-col-key="action">操作</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="toolbar users-pagination" style="justify-content:space-between;align-items:center;">
+             <div class="muted pagination-info">载入中...</div>
+             <div style="display:flex;gap:8px;"><button class="btn btn-light">上一页</button><button class="btn btn-light">下一页</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="checkin" class="section">
+        <div class="section-header"><div><h3 class="section-title">签到记录</h3><div class="section-subtitle">查看用户每日签到时间、奖励和状态。</div></div></div>
+        <div class="toolbar"><div class="field"><span>🔎</span><input placeholder="姓名 / 手机号" /></div><button class="btn btn-primary">查询</button></div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th>用户ID</th><th>用户名字</th><th>电话号码</th><th>签到日期</th><th>签到时间</th><th>奖励金额</th><th>连续天数</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="withdraw" class="section">
+        <div class="section-header"><div><h3 class="section-title">提现审核</h3></div></div>
+        <div class="table-card">
+           <table><thead><tr><th>提现单号</th><th>用户名字</th><th>提现金额</th><th>申请时间</th><th>状态</th><th>操作</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">暂无真实数据记录</td></tr></tbody></table>
+        </div>
+      </section>
+
+      <section id="ledger" class="section">
+        <div class="section-header"><div><h3 class="section-title">资金流水</h3></div></div>
+        <div class="table-card">
+           <table><thead><tr><th>流水单号</th><th>用户名字</th><th>变动金额</th><th>时间</th><th>原因</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">暂无真实数据记录</td></tr></tbody></table>
+        </div>
+      </section>
+
+      <section id="login" class="section active">
+        <div style="max-width:420px;margin:100px auto;">
+          <div class="card" style="padding:28px;">
+            <h3 class="section-title" style="margin-bottom:8px;text-align:center;">后台系统登录</h3>
+            <div class="section-subtitle" style="margin-bottom:24px;text-align:center;">请输入管理员凭据以继续</div>
+            <div class="field" style="width:100%;margin-bottom:12px;"><span>👤</span><input id="loginEmail" placeholder="管理员账号" /></div>
+            <div class="field" style="width:100%;margin-bottom:20px;"><span>🔒</span><input id="loginPassword" placeholder="登录密码" type="password" /></div>
+            <button id="btnLogin" class="btn btn-primary" style="width:100%;padding:14px;">登录后台</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Other sections simplified for brief demo -->
+      <section id="announcements" class="section"><h3>首页奈拉汇率 / 公告</h3><p class="muted">逻辑开发中...</p></section>
+      <section id="broadcast" class="section"><h3>广播推广</h3><p class="muted">逻辑开发中...</p></section>
+      <section id="risk" class="section"><h3>风控名单</h3><p class="muted">数据同步中...</p></section>
+      <section id="logs" class="section"><h3>操作日志</h3><p class="muted">记录载入中...</p></section>
+      <section id="settings" class="section">
+        <div class="section-header"><div><h3 class="section-title">系统设置</h3><div class="section-subtitle">配置全局奖励、费率和系统开关。</div></div></div>
+        
+        <div class="card" style="max-width: 600px;">
+          <h3 class="mini-title">奖励配置</h3>
+          <div style="margin-bottom: 20px;">
+            <label style="display:block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">每日签到奖励 (₦)</label>
+            <div class="field" style="width: 100%;">
+              <span>💰</span>
+              <input type="number" id="confCheckinAmount" placeholder="输入签到奖励金额" />
+            </div>
+            <p class="muted" style="margin-top: 6px;">设置用户点击“每日签到”后获得的奖励金额。</p>
+          </div>
+          
+          <div style="border-top: 1px solid #eef2f7; padding-top: 20px; margin-top: 10px;">
+            <button id="btnSaveSettings" class="btn btn-primary" style="padding: 12px 24px;">保存配置</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="drawer" style="position:fixed;top:0;right:-420px;width:400px;max-width:100%;height:100%;background:#fff;border-left:1px solid #e5e7eb;box-shadow:-10px 0 30px rgba(15,23,42,.08);transition:.25s;z-index:20;padding:22px;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div><div style="font-size:20px;font-weight:700;">详细信息</div></div>
+      <button id="closeDrawer" class="btn btn-light">关闭</button>
+    </div>
+    <div id="drawerContent"></div>
+  </div>
+  <div id="drawerMask" style="position:fixed;inset:0;background:rgba(15,23,42,.28);display:none;z-index:19;"></div>
+
+  <script>
+    // ==========================================
+    // UI NAVIGATION & LAYOUT
+    // ==========================================
+    const menuItems = document.querySelectorAll('.menu-item');
+    const sections = document.querySelectorAll('.section');
+    const sidebar = document.querySelector('.sidebar');
+    const mainArea = document.querySelector('.main');
+
+    menuItems.forEach(item => {
+      item.addEventListener('click', () => {
+        if (!adminToken && item.dataset.target !== 'login') return;
+        navigateTo(item.dataset.target);
+      });
+    });
+
+    function navigateTo(targetId) {
+      menuItems.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.target === targetId) btn.classList.add('active');
+      });
+      sections.forEach(section => {
+        section.classList.remove('active');
+        if (section.id === targetId) section.classList.add('active');
+      });
+
+      if (targetId === 'dashboard') loadDashboardData();
+      if (targetId === 'users') loadUsersData();
+      if (targetId === 'checkin') loadCheckinsData();
+      if (targetId === 'settings') loadSettingsData();
+    }
+
+    // ==========================================
+    // DRAWER LOGIC
+    // ==========================================
+    const drawer = document.getElementById('drawer');
+    const drawerMask = document.getElementById('drawerMask');
+    const closeDrawer = document.getElementById('closeDrawer');
+
+    function openPanel(contentHtml) {
+      document.getElementById('drawerContent').innerHTML = contentHtml || '<p>暂无数据</p>';
+      drawer.style.right = '0';
+      drawerMask.style.display = 'block';
+    }
+    function closePanel() { drawer.style.right = '-420px'; drawerMask.style.display = 'none'; }
+    if(closeDrawer) closeDrawer.addEventListener('click', closePanel);
+    if(drawerMask) drawerMask.addEventListener('click', closePanel);
+
+    // ==========================================
+    // COLUMN MANAGEMENT
+    // ==========================================
+    const userTable = document.getElementById('userTable');
+    const userColumnList = document.getElementById('user-column-list');
+    const userColumnsReset = document.getElementById('user-columns-reset');
+    const userColumnsApply = document.getElementById('user-columns-apply');
+    const defaultColumnOrder = ['user_id','register_name','phone','email','bank_account','bank_name','register_time','register_ip','last_login_ip','last_login','device','remark','app_amount','status','risk_tag','action'];
+
+    function applyUserColumnSettings() {
+      if (!userTable || !userColumnList) return;
+      const order = Array.from(userColumnList.querySelectorAll('.column-item')).map(item => item.dataset.colKey);
+      const visibleMap = {};
+      userColumnList.querySelectorAll('.column-item').forEach(item => { visibleMap[item.dataset.colKey] = item.querySelector('input').checked; });
+
+      const headRow = userTable.querySelector('thead tr');
+      const bodyRows = userTable.querySelectorAll('tbody tr');
+
+      order.forEach(key => { const th = headRow.querySelector(`th[data-col-key="${key}"]`); if (th) headRow.appendChild(th); });
+      bodyRows.forEach(row => { order.forEach(key => { const td = row.querySelector(`td[data-col-key="${key}"]`); if (td) row.appendChild(td); }); });
+
+      defaultColumnOrder.forEach(key => {
+        const shouldShow = !!visibleMap[key];
+        const th = headRow.querySelector(`th[data-col-key="${key}"]`);
+        if (th) th.style.display = shouldShow ? '' : 'none';
+        bodyRows.forEach(row => { const td = row.querySelector(`td[data-col-key="${key}"]`); if (td) td.style.display = shouldShow ? '' : 'none'; });
+      });
+    }
+
+    if (userColumnsApply) {
+      userColumnsApply.addEventListener('click', () => {
+        applyUserColumnSettings();
+        document.getElementById('user-columns').style.display = 'none';
+      });
+    }
+    if (userColumnsReset) {
+      userColumnsReset.addEventListener('click', () => {
+        const items = Array.from(userColumnList.querySelectorAll('.column-item'));
+        items.forEach(item => { item.querySelector('input').checked = true; userColumnList.appendChild(item); });
+        applyUserColumnSettings();
+      });
+    }
+
+    document.querySelectorAll('.column-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const panel = document.getElementById(btn.dataset.panel);
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+      });
+    });
+    document.addEventListener('click', () => document.querySelectorAll('.column-panel').forEach(p => p.style.display = 'none'));
+    document.querySelectorAll('.column-panel').forEach(p => p.addEventListener('click', e => e.stopPropagation()));
+
+    // ==========================================
+    // API INTEGRATION
+    // ==========================================
+    const API_BASE = '/api/mobile/admin';
+    let adminToken = localStorage.getItem('admin_token') || '';
+
+    function checkLoginStatus() {
+      if (!adminToken) {
+        sidebar.style.display = 'none';
+        mainArea.style.marginLeft = '0';
+        navigateTo('login');
+      } else {
+        sidebar.style.display = 'block';
+        if (window.innerWidth > 860) mainArea.style.marginLeft = '248px';
+        if (document.getElementById('login').classList.contains('active')) navigateTo('dashboard');
+      }
+    }
+
+    const btnLogin = document.getElementById('btnLogin');
+    if (btnLogin) {
+      btnLogin.addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        if (!email || !password) return alert('请输入完整信息');
+        btnLogin.textContent = '验证中...';
+        try {
+          const res = await fetch(`${API_BASE}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const json = await res.json();
+          if (json.status === 200) {
+            adminToken = json.data.token;
+            localStorage.setItem('admin_token', adminToken);
+            checkLoginStatus();
+          } else { alert(json.msg || '登录失败'); }
+        } catch (e) { alert('网络连接错误'); }
+        finally { btnLogin.textContent = '登录后台'; }
+      });
+    }
+
+    async function loadDashboardData() {
+      if (!adminToken) return;
+      try {
+        const res = await fetch(`${API_BASE}/stats`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+        const json = await res.json();
+        if (json.status === 200) {
+          const cards = document.querySelectorAll('#dashboard .stat-value');
+          if(cards[0]) cards[0].innerText = json.data.total_users;
+          if(cards[1]) cards[1].innerText = json.data.today_checkins;
+          if(cards[3]) cards[3].innerText = '₦ ' + (json.data.total_balance || 0);
+        } else if (json.status === 401) handleLogout();
+      } catch (e) {}
+    }
+
+    async function loadUsersData(search = '') {
+      if (!adminToken) return;
+      const tbody = document.querySelector('#userTable tbody');
+      tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;">载入中...</td></tr>';
+      try {
+        let url = `${API_BASE}/users?per_page=50`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+        const json = await res.json();
+        if (json.status === 200) {
+          tbody.innerHTML = '';
+          if (json.data.users.length === 0) tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:40px;">暂无满足条件的用户</td></tr>';
+          json.data.users.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td data-col-key="user_id">U${u.id}</td>
+              <td data-col-key="register_name">${u.name}</td>
+              <td data-col-key="phone">${u.phone}</td>
+              <td data-col-key="email">${u.email}</td>
+              <td data-col-key="bank_account">--</td>
+              <td data-col-key="bank_name">--</td>
+              <td data-col-key="register_time">${u.created_at}</td>
+              <td data-col-key="register_ip">--</td>
+              <td data-col-key="last_login_ip">${u.last_login_ip || '--'}</td>
+              <td data-col-key="last_login">${u.last_login || '--'}</td>
+              <td data-col-key="device">--</td>
+              <td data-col-key="remark">--</td>
+              <td data-col-key="app_amount">₦ ${u.balance}</td>
+              <td data-col-key="status"><span class="tag tag-green">${u.status}</span></td>
+              <td data-col-key="risk_tag"><span class="tag tag-blue">普通</span></td>
+              <td data-col-key="action">
+                <a href="javascript:void(0)" class="action-link" onclick="updateUserBalance(${u.id}, ${u.balance})">修改资金</a>
+                <a href="javascript:void(0)" class="action-link" onclick="viewUserDetail(${u.id})">详情</a>
+              </td>`;
+            tbody.appendChild(tr);
+          });
+          applyUserColumnSettings();
+          document.querySelector('.pagination-info').innerText = `共 ${json.data.total} 条`;
+        }
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;color:red;">载入出错</td></tr>'; }
+    }
+
+    async function loadCheckinsData() {
+      if (!adminToken) return;
+      const tbody = document.querySelector('#checkin tbody');
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">载入中...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/checkins`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+        const json = await res.json();
+        if (json.status === 200) {
+          tbody.innerHTML = '';
+          if (json.data.checkins.length === 0) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;">暂无签到</td></tr>';
+          json.data.checkins.forEach(c => {
+             const tr = document.createElement('tr');
+             tr.innerHTML = `<td>U${c.id}</td><td>${c.name}</td><td>${c.phone}</td><td>${c.check_in_date}</td><td>${c.check_in_time}</td><td>${c.amount_awarded}</td><td>${c.consecutive_days}</td><td><span class="tag tag-green">已签到</span></td><td>--</td>`;
+             tbody.appendChild(tr);
+          });
+        }
+      } catch (e) {}
+    }
+
+    const userSearchBtn = document.getElementById('userSearchBtn');
+    const userSearchInput = document.getElementById('userSearchInput');
+    if(userSearchBtn) userSearchBtn.addEventListener('click', () => loadUsersData(userSearchInput.value));
+
+    window.updateUserBalance = async function(id, current) {
+      const input = prompt(`请输入新的绝对余额 (当前: ₦ ${current})：`);
+      if (input === null || input.trim() === '') return;
+      try {
+        const res = await fetch(`${API_BASE}/users/${id}/update_balance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+          body: JSON.stringify({ balance: input })
+        });
+        const json = await res.json();
+        if (json.status === 200) { alert('修改成功'); loadUsersData(userSearchInput.value); loadDashboardData(); }
+        else alert(json.msg || '操作失败');
+      } catch (e) { alert('请求出错'); }
+    };
+
+    window.viewUserDetail = function(id) {
+       openPanel(`<div class="card"><h4>用户 U${id} 的详细快照</h4><p class="muted">更多业务字段正在解析中...</p></div>`);
+    };
+    
+    async function loadSettingsData() {
+      if (!adminToken) return;
+      try {
+        const res = await fetch(`${API_BASE}/config`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+        const json = await res.json();
+        if (json.status === 200) {
+          document.getElementById('confCheckinAmount').value = json.data.checkin_amount;
+        }
+      } catch (e) {}
+    }
+
+    const btnSaveSettings = document.getElementById('btnSaveSettings');
+    if (btnSaveSettings) {
+      btnSaveSettings.addEventListener('click', async () => {
+        const amount = document.getElementById('confCheckinAmount').value;
+        if (!amount) return alert('请输入奖励金额');
+        btnSaveSettings.textContent = '保存中...';
+        try {
+          const res = await fetch(`${API_BASE}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+            body: JSON.stringify({ checkin_amount: amount })
+          });
+          const json = await res.json();
+          if (json.status === 200) { alert('保存成功'); }
+          else { alert(json.msg || '保存失败'); }
+        } catch (e) { alert('网络错误'); }
+        finally { btnSaveSettings.textContent = '保存配置'; }
+      });
+    }
+
+    function handleLogout() { localStorage.removeItem('admin_token'); adminToken = ''; checkLoginStatus(); }
+
+    checkLoginStatus();
+  </script>
+</body>
+</html>

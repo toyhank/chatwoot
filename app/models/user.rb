@@ -169,6 +169,22 @@ class User < ApplicationRecord
     find_by(email: email&.downcase)
   end
 
+  def check_in!
+    if last_check_in_at.nil? || last_check_in_at < Time.current.beginning_of_day
+      # Fetch check-in amount from InstallationConfig
+      checkin_amount_config = InstallationConfig.find_by(name: 'MOBILE_CHECKIN_AMOUNT')
+      amount = checkin_amount_config&.serialized_value || 5
+
+      update!(
+        balance: (balance || 0) + amount.to_i,
+        last_check_in_at: Time.current
+      )
+      true
+    else
+      false
+    end
+  end
+
   # 2FA/MFA Methods
   # Delegated to Mfa::ManagementService for better separation of concerns
   def mfa_service

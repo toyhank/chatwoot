@@ -46,7 +46,59 @@ class Api::Mobile::User::UserController < Api::BaseController
     end
   end
 
-  private
+  # POST /api/mobile/user/check_in
+  def check_in
+    auth_header = request.headers['Authorization']
+    
+    unless auth_header&.start_with?('Bearer ')
+      return render_error(status: 401, msg: '未授权,请先登录')
+    end
+
+    token = auth_header.sub('Bearer ', '').strip
+    access_token = AccessToken.find_by(token: token)
+    unless access_token&.owner.is_a?(User)
+      return render_error(status: 401, msg: '未授权,请先登录')
+    end
+
+    user = access_token.owner
+
+    if user.check_in!
+      render_success(
+        data: { balance: user.balance },
+        msg: '签到成功，余额已增加'
+      )
+    else
+      render json: {
+        status: 422,
+        msg: '今天已经签到过了',
+        data: { balance: user.balance || 0 }
+      }, status: :unprocessable_entity
+    end
+  end
+  # GET /api/mobile/user/profile
+  def profile
+    auth_header = request.headers["Authorization"]
+    unless auth_header&.start_with?("Bearer ")
+      return render_error(status: 401, msg: "未授权,请先登录")
+    end
+
+    token = auth_header.sub("Bearer ", "").strip
+    access_token = AccessToken.find_by(token: token)
+    unless access_token&.owner.is_a?(User)
+      return render_error(status: 401, msg: "未授权,请先登录")
+    end
+
+    user = access_token.owner
+    render_success(
+      data: {
+        uid: user.id,
+        email: user.email,
+        name: user.name,
+        balance: user.balance || 0
+      }
+    )
+  end
+
 
   def render_success(data: {}, msg: 'ok')
     render json: {

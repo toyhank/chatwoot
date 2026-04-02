@@ -24,6 +24,14 @@ class Api::V1::Widget::ContactsController < Api::V1::Widget::BaseController
     identify_contact(contact)
   end
 
+  def check_in
+    if @contact.check_in!
+      render json: { success: true, balance: @contact.balance, message: '签到成功，余额已增加' }
+    else
+      render json: { success: false, balance: @contact.balance, message: '今天已经签到过了' }, status: :unprocessable_entity
+    end
+  end
+
   # TODO : clean up this with proper routes delete contacts/custom_attributes
   def destroy_custom_attributes
     @contact.custom_attributes = @contact.custom_attributes.excluding(params[:custom_attributes])
